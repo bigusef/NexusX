@@ -6,6 +6,7 @@ Settings are loaded from environment variables and .env file.
 
 from functools import lru_cache
 
+from pydantic import PostgresDsn, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from src.shared.enums import Environment
@@ -16,6 +17,7 @@ class Settings(BaseSettings):
 
     Attributes:
         environment: Current runtime environment. Defaults to development.
+        database_dsn: PostgreSQL async connection DSN using asyncpg driver.
     """
 
     model_config = SettingsConfigDict(
@@ -24,7 +26,11 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    # Project Global Configuration
     environment: Environment = Environment.DEVELOPMENT
+
+    # Database Configuration
+    database_dsn: PostgresDsn = Field(alias="database_url", default="postgresql+asyncpg://user:pass@host:5432/db")
 
     @property
     def debug(self) -> bool:
@@ -38,6 +44,15 @@ class Settings(BaseSettings):
             Environment.TESTING,
             Environment.STAGING,
         )
+
+    @property
+    def database_url(self) -> str:
+        """Get database URL as string for SQLAlchemy.
+
+        Returns:
+            Database connection string.
+        """
+        return self.database_dns.unicode_string()
 
 
 @lru_cache
