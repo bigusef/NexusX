@@ -1,0 +1,63 @@
+repos:
+  # General hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        args: [--maxkb=500]
+      - id: check-merge-conflict
+      - id: check-yaml
+        args: [--unsafe]
+      - id: check-toml
+      - id: debug-statements
+      - id: end-of-file-fixer
+        exclude: ^.*\.(md|txt)$
+      - id: trailing-whitespace
+        exclude: ^.*\.(md|txt)$
+      - id: mixed-line-ending
+        args: [--fix=auto]
+      - id: check-docstring-first
+      - id: check-executables-have-shebangs
+      - id: check-case-conflict
+      - id: check-symlinks
+      - id: destroyed-symlinks
+      - id: check-json
+      - id: detect-private-key
+
+  # Ruff - linting and formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.7
+    hooks:
+      # Run the linter.
+      - id: ruff-check
+        args: [--fix, --exit-non-zero-on-fix]
+        types_or: [ python, pyi ]
+      # Run the formatter.
+      - id: ruff-format
+        types_or: [ python, pyi ]
+
+  # Python code style enhancements
+  - repo: https://github.com/MarcoGorelli/auto-walrus
+    rev: 0.3.4
+    hooks:
+      - id: auto-walrus
+
+  # Commit message standards
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.29.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+
+# Global configuration
+ci:
+  autofix_commit_msg: |
+    style: auto fixes from pre-commit hooks
+  autofix_prs: true
+  autoupdate_commit_msg: 'chore: pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false
+
+fail_fast: false
+default_stages: [pre-commit]

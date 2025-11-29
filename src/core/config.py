@@ -30,13 +30,13 @@ class Settings(BaseSettings):
     # Project Global Configuration
     environment: Environment = Environment.DEVELOPMENT
 
-    allowed_cors_origins: str = Field(alias="allowed_origins", default="*")
+    allowed_cors_origins: str = Field(alias="allowed_origins")
 
     # Database Configuration
-    database_dsn: PostgresDsn = Field(alias="database_url", default="postgresql+asyncpg://user:pass@host:5432/db")
+    database_dsn: PostgresDsn = Field(alias="database_url")
 
     # Redis Configuration
-    redis_dsn: RedisDsn = Field(alias="redis_url", default="redis://localhost:6379/0")
+    redis_dsn: RedisDsn = Field(alias="redis_url")
 
     @property
     def debug(self) -> bool:

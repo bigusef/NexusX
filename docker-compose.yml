@@ -1,38 +1,20 @@
+# Shared configuration for backend services
+x-nexus-cortex: &nexus-cortex
+  build:
+    context: .
+    dockerfile: Dockerfile
+    args:
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+  image: nexus-core
+  volumes:
+    - .:/src
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
 services:
-  api:
-    build: .
-    container_name: nexus-api
-    ports:
-      - "8000:8000"
-    volumes:
-      - .:/src
-    depends_on:
-      - postgres
-      - redis
-    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
-
-  worker:
-    build: .
-    container_name: nexus-worker
-    volumes:
-      - .:/src
-    depends_on:
-      - postgres
-      - redis
-    command: arq workers.main.WorkerSettings
-
-  postgres:
-    image: postgres:16-alpine
-    container_name: nexus-postgres
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: nexus
-      POSTGRES_PASSWORD: nexus
-      POSTGRES_DB: nexus
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
   redis:
     image: redis:7-alpine
     container_name: nexus-redis
@@ -40,7 +22,41 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: nexus-postgres
+    environment:
+      POSTGRES_USER: nexus
+      POSTGRES_PASSWORD: nexus
+      POSTGRES_DB: nexus
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexus -d nexus"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    <<: *nexus-cortex
+    container_name: nexus_api
+    env_file: .env.example
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+
+  worker:
+    <<: *nexus-cortex
+    container_name: nexus-worker
+    env_file: .env.example
+    command: arq workers.main.WorkerSettings
 
 volumes:
-  postgres_data:
   redis_data:
+  postgres_data:

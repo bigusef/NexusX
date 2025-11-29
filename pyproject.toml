@@ -15,4 +15,64 @@ dependencies = [
     "alembic>=1.14.0",
     "redis>=5.2.0",
     "arq>=0.26.1",
+    "ruff>=0.8.0",
+    "watchfiles>=1.0.0",
+    "pre-commit>=4.0.0",
 ]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8.0",
+    "watchfiles>=1.0.0",
+    "pre-commit>=4.0.0",
+]
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+fix = true
+target-version = "py313"
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "alembic/versions",
+]
+
+[tool.ruff.lint]
+select = [
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # Pyflakes
+    "I", # isort
+    "UP", # pyupgrade
+    "B", # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "SIM", # flake8-simplify
+]
+ignore = [
+    "E501", # line too long (handled by formatter)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/*" = ["D100", "D101", "S101"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+skip-magic-trailing-comma = false
+docstring-code-format = false
+docstring-code-line-length = "dynamic"
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+known-first-party = ["src", "workers"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+lines-after-imports = 2
+combine-as-imports = true
+force-single-line = true
+split-on-trailing-comma = true
