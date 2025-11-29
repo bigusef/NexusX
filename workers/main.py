@@ -9,6 +9,20 @@ from arq.connections import RedisSettings
 from src.core import settings
 
 
+async def ping(ctx: dict) -> str:
+    """Health check task for worker.
+
+    A simple task that can be used to verify the worker is processing jobs.
+
+    Args:
+        ctx: Worker context dictionary.
+
+    Returns:
+        A simple pong response.
+    """
+    return "pong"
+
+
 async def startup(ctx: dict) -> None:
     """Worker startup hook.
 
@@ -51,7 +65,7 @@ class WorkerSettings:
     redis_settings = RedisSettings.from_dsn(settings.redis_url)
 
     # Task functions (can be called with arq)
-    functions: list = []
+    functions: list = [ping]
 
     # Cron jobs (scheduled tasks)
     cron_jobs: list = []
