@@ -7,7 +7,7 @@ x-nexus-cortex: &nexus-cortex
       ENVIRONMENT: ${ENVIRONMENT:-development}
   image: nexus-cortex
   volumes:
-    - .:/src
+    - .:/app
   depends_on:
     postgres:
       condition: service_healthy

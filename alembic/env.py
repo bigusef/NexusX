@@ -21,8 +21,8 @@ from src.core import settings
 logger = logging.getLogger("alembic")
 
 # Auto-import all domain entities for Alembic auto-discovery
-# This scans app/domains/ and imports all entities modules/packages automatically
-domains_path = Path(__file__).parent.parent / "app" / "domains"
+# This scans src/domains/ and imports all entities modules/packages automatically
+domains_path = Path(__file__).parent.parent / "src" / "domains"
 for domain_dir in domains_path.iterdir():
     if domain_dir.is_dir() and not domain_dir.name.startswith("_"):
         # Check for entities.py module or entities/ package
@@ -31,7 +31,7 @@ for domain_dir in domains_path.iterdir():
 
         if entities_module.exists() or (entities_package.exists() and (entities_package / "__init__.py").exists()):
             # Import the entities module to register models with Entity.metadata
-            module_name = f"app.domains.{domain_dir.name}.entities"
+            module_name = f"src.domains.{domain_dir.name}.entities"
             try:
                 importlib.import_module(module_name)
             except ImportError as e:
