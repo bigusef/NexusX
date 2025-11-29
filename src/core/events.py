@@ -2,14 +2,18 @@
 
 This module provides lifespan management for startup and shutdown events.
 """
+
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from src.core.database import close_database, init_database
-from src.core.redis import close_redis, init_redis
+from .database import close_database
+from .database import init_database
+from .i18n import init_translations
+from .redis import close_redis
+from .redis import init_redis
 
 
 logger = logging.getLogger(__name__)
@@ -31,6 +35,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """
     # Startup
     logger.info("Starting up application...")
+
+    # Load translations
+    init_translations()
+    logger.info("Translations loaded")
 
     # Initialize database
     try:
