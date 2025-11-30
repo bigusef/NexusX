@@ -5,6 +5,7 @@ x-nexus-cortex: &nexus-cortex
     dockerfile: Dockerfile
     target: development
   image: nexus-cortex:dev
+  env_file: .env.example
   volumes:
     - .:/app
   depends_on:
@@ -47,7 +48,6 @@ services:
   api:
     <<: *nexus-cortex
     container_name: nexus-api
-    env_file: .env.example
     ports:
       - "8000:8000"
     command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
@@ -55,7 +55,6 @@ services:
   worker:
     <<: *nexus-cortex
     container_name: nexus-worker
-    env_file: .env.example
     command: arq workers.main.WorkerSettings
 
 volumes:
