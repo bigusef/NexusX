@@ -4,10 +4,10 @@ from uuid import UUID
 
 from fastapi import Depends
 
-from src.core.jwt import JWTService
-from src.core.jwt import TokenPair
 from src.exceptions import AuthenticationException
 from src.exceptions import NotFoundException
+from src.security import JWTService
+from src.security import TokenPair
 
 from .repositories import UserRepository
 

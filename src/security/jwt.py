@@ -60,6 +60,7 @@ class JWTService:
         ```python
         from typing import Annotated
         from fastapi import Depends
+        from src.security import JWTService
 
         @app.post("/login")
         async def login(
@@ -79,17 +80,6 @@ class JWTService:
             async with get_redis_context() as redis:
                 jwt_service = JWTService(redis)
                 await jwt_service.revoke_all_user_tokens(user_id)
-        ```
-
-    Token operations:
-        ```python
-        # Verify tokens
-        payload = await jwt_service.verify_access_token(tokens.access)
-        payload = await jwt_service.verify_refresh_token(tokens.refresh)
-
-        # Revoke tokens
-        await jwt_service.revoke_refresh_token(jti)  # Single device
-        await jwt_service.revoke_all_user_tokens(user_id)  # All devices
         ```
     """
 
@@ -114,27 +104,13 @@ class JWTService:
     # =========================================================================
 
     async def _get_token_version(self, user_id: UUID) -> int:
-        """Get current token version for a user.
-
-        Args:
-            user_id: User UUID.
-
-        Returns:
-            Current token version (0 if not set).
-        """
+        """Get current token version for a user."""
         key = f"{self._TOKEN_VERSION_PREFIX}{user_id}"
         version = await self._redis.get(key)
         return int(version) if version else 0
 
     async def _increment_token_version(self, user_id: UUID) -> int:
-        """Increment token version, invalidating all existing tokens.
-
-        Args:
-            user_id: User UUID.
-
-        Returns:
-            New token version.
-        """
+        """Increment token version, invalidating all existing tokens."""
         key = f"{self._TOKEN_VERSION_PREFIX}{user_id}"
         return await self._redis.incr(key)
 
@@ -143,25 +119,13 @@ class JWTService:
     # =========================================================================
 
     async def _store_refresh_token(self, jti: UUID, user_id: UUID) -> None:
-        """Store refresh token as active in Redis.
-
-        Args:
-            jti: Refresh token unique ID.
-            user_id: User UUID.
-        """
+        """Store refresh token as active in Redis."""
         key = f"{self._REFRESH_TOKEN_PREFIX}{jti}"
         ttl = int(self._refresh_expiration.total_seconds())
         await self._redis.setex(key, ttl, str(user_id))
 
     async def _is_refresh_token_active(self, jti: str | UUID) -> bool:
-        """Check if refresh token is still active.
-
-        Args:
-            jti: Refresh token unique ID.
-
-        Returns:
-            True if active, False if revoked or expired.
-        """
+        """Check if refresh token is still active."""
         key = f"{self._REFRESH_TOKEN_PREFIX}{jti}"
         return await self._redis.exists(key) > 0
 
@@ -176,17 +140,7 @@ class JWTService:
         is_staff: bool,
         version: int,
     ) -> str:
-        """Create a JWT access token.
-
-        Args:
-            user_id: User UUID.
-            email: User email address.
-            is_staff: Whether user is staff/admin.
-            version: Token version for invalidation.
-
-        Returns:
-            Encoded JWT access token.
-        """
+        """Create a JWT access token."""
         now = datetime.now(UTC)
         exp = now + self._access_expiration
 
@@ -203,15 +157,7 @@ class JWTService:
         return jwt.encode(payload, self._secret_key, algorithm=self._algorithm)
 
     async def _create_refresh_token(self, user_id: UUID, version: int) -> str:
-        """Create a JWT refresh token and store in Redis.
-
-        Args:
-            user_id: User UUID.
-            version: Token version for invalidation.
-
-        Returns:
-            Encoded JWT refresh token.
-        """
+        """Create a JWT refresh token and store in Redis."""
         now = datetime.now(UTC)
         exp = now + self._refresh_expiration
         jti = uuid4()
@@ -226,8 +172,6 @@ class JWTService:
         }
 
         token = jwt.encode(payload, self._secret_key, algorithm=self._algorithm)
-
-        # Store refresh token as active in Redis
         await self._store_refresh_token(jti, user_id)
 
         return token
@@ -259,18 +203,7 @@ class JWTService:
     # =========================================================================
 
     def _decode_token(self, token: str) -> dict:
-        """Decode and verify JWT token signature and expiration.
-
-        Args:
-            token: JWT token string.
-
-        Returns:
-            Decoded token payload.
-
-        Raises:
-            InvalidTokenException: If token is malformed or invalid signature.
-            ExpiredTokenException: If token has expired.
-        """
+        """Decode and verify JWT token signature and expiration."""
         try:
             payload = jwt.decode(
                 token,
@@ -299,11 +232,9 @@ class JWTService:
         """
         payload = self._decode_token(token)
 
-        # Verify token type
         if payload.get("type") != "access":
             raise InvalidTokenException()
 
-        # Verify token version
         user_id = UUID(payload["sub"])
         current_version = await self._get_token_version(user_id)
 
@@ -328,18 +259,15 @@ class JWTService:
         """
         payload = self._decode_token(token)
 
-        # Verify token type
         if payload.get("type") != "refresh":
             raise InvalidTokenException()
 
-        # Verify token version
         user_id = UUID(payload["sub"])
         current_version = await self._get_token_version(user_id)
 
         if payload.get("version", 0) != current_version:
             raise RevokedTokenException()
 
-        # Verify token is still active in Redis
         jti = payload.get("jti")
         if not jti or not await self._is_refresh_token_active(jti):
             raise RevokedTokenException()
@@ -353,14 +281,7 @@ class JWTService:
     async def refresh_token_pair(self, refresh_token: str, email: str, is_staff: bool) -> TokenPair:
         """Create a new access token using a valid refresh token.
 
-        This method:
-        1. Verifies the refresh token is valid and not revoked
-        2. Creates a new access token
-        3. If refresh token expires within 2x access token lifetime, rotates it
-        4. Otherwise, returns the original refresh token
-
-        Note: The auth service should validate that the user still exists
-        and is active before calling this method.
+        Rotates the refresh token if remaining time < 2x access token expiration.
 
         Args:
             refresh_token: Current refresh token.
@@ -380,15 +301,12 @@ class JWTService:
         version = await self._get_token_version(payload.sub)
         access_token = self._create_access_token(payload.sub, email, is_staff, version)
 
-        # Check if the refresh token needs rotation
-        # Rotate if remaining time < 2 * access token expiration
         now = datetime.now(UTC)
         refresh_exp = datetime.fromtimestamp(payload.exp, tz=UTC)
         remaining_time = refresh_exp - now
         rotation_threshold = self._access_expiration * 2
 
         if remaining_time < rotation_threshold:
-            # Revoke old refresh token and create new one
             if payload.jti:
                 await self.revoke_refresh_token(payload.jti)
 
@@ -402,20 +320,10 @@ class JWTService:
     # =========================================================================
 
     async def revoke_refresh_token(self, jti: str | UUID) -> None:
-        """Revoke a specific refresh token (single device logout).
-
-        Args:
-            jti: Refresh token unique ID.
-        """
+        """Revoke a specific refresh token (single device logout)."""
         key = f"{self._REFRESH_TOKEN_PREFIX}{jti}"
         await self._redis.delete(key)
 
     async def revoke_all_user_tokens(self, user_id: UUID) -> None:
-        """Revoke all tokens for a user (all devices logout).
-
-        Increments the user's token version, invalidating all existing tokens.
-
-        Args:
-            user_id: User UUID.
-        """
+        """Revoke all tokens for a user (all devices logout)."""
         await self._increment_token_version(user_id)

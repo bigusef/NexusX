@@ -8,9 +8,9 @@ from fastapi import status
 from pydantic import BaseModel
 from pydantic import Field
 
-from src.core.security import UserID
 from src.domains.auth.services import AuthService
-from src.domains.auth.services import TokenPair
+from src.security import TokenPair
+from src.security import UserID
 
 
 # ─── Schemas ──────────────────────────────────────────────────────────────────
