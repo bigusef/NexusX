@@ -5,9 +5,11 @@ filtering, and both FastAPI DI and ARQ worker compatibility.
 """
 
 from collections.abc import Sequence
+from typing import Annotated
 from typing import Any
 from typing import Self
 
+from fastapi import Depends
 from sqlalchemy import ColumnElement
 from sqlalchemy import delete
 from sqlalchemy import exists
@@ -17,6 +19,7 @@ from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.abstract.entity import Entity
+from src.core.database import get_session
 from src.exceptions import NotFoundException
 
 
@@ -36,21 +39,23 @@ class Repository[EntityT: Entity]:
     - Count and existence checks
     - Transaction support for cross-repository operations
 
-    Usage with FastAPI (dependency injection):
+    Usage with FastAPI (automatic dependency injection):
         ```python
+        from typing import Annotated
+        from fastapi import Depends
+
         class UserRepository(Repository[User]):
-            entity = User
+            pass  # Entity type auto-detected from generic parameter
 
         @app.get("/users/{user_id}")
         async def get_user(
             user_id: UUID,
-            session: AsyncSession = Depends(get_session),
+            user_repo: Annotated[UserRepository, Depends()],
         ):
-            repo = UserRepository(session)
-            return await repo.get_one(User.pk == user_id)
+            return await user_repo.get_one(User.pk == user_id)
         ```
 
-    Usage with ARQ workers:
+    Usage with ARQ workers (manual instantiation):
         ```python
         async def process_user_task(ctx: dict, user_id: UUID):
             async with get_session_context() as session:
@@ -59,7 +64,7 @@ class Repository[EntityT: Entity]:
                 # ... process user
         ```
 
-    Transaction support (multiple repositories):
+    Transaction support (multiple repositories sharing session):
         ```python
         async with get_session_context() as session:
             user_repo = UserRepository(session)
@@ -84,7 +89,10 @@ class Repository[EntityT: Entity]:
         super().__init_subclass__(**kwargs)
         cls._entity = cls.__orig_bases__[0].__args__[0]
 
-    def __init__(self, session: AsyncSession) -> None:
+    def __init__(
+        self,
+        session: Annotated[AsyncSession, Depends(get_session)],
+    ) -> None:
         """Initialize repository with database session.
 
         Args:

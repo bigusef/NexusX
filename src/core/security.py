@@ -3,18 +3,12 @@
 from typing import Annotated
 from uuid import UUID
 
-import redis.asyncio as aioredis
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials
 from fastapi.security import HTTPBearer
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.database import get_session
 from src.core.jwt import JWTService
 from src.core.jwt import TokenPayload
-from src.core.redis import get_redis
-from src.domains.auth.repositories import UserRepository
-from src.domains.auth.services import AuthService
 from src.exceptions import AuthorizationException
 
 
@@ -22,40 +16,9 @@ from src.exceptions import AuthorizationException
 bearer_scheme = HTTPBearer()
 
 
-async def get_jwt_service(
-    redis: Annotated[aioredis.Redis, Depends(get_redis)],
-) -> JWTService:
-    """Provide a JWTService instance.
-
-    Args:
-        redis: Redis a client from dependency injection.
-
-    Returns:
-        Configured JWTService instance.
-    """
-    return JWTService(redis)
-
-
-async def get_auth_service(
-    session: Annotated[AsyncSession, Depends(get_session)],
-    jwt_service: Annotated[JWTService, Depends(get_jwt_service)],
-) -> AuthService:
-    """Provide an AuthService instance with dependencies.
-
-    Args:
-        session: Database session from dependency injection.
-        jwt_service: JWT service from dependency injection.
-
-    Returns:
-        Configured AuthService instance.
-    """
-    user_repo = UserRepository(session)
-    return AuthService(user_repo, jwt_service)
-
-
 async def _get_token_payload(
-    jwt_service: Annotated[JWTService, Depends(get_jwt_service)],
-    credentials: Annotated[HTTPAuthorizationCredentials, Depends(bearer_scheme)],
+        jwt_service: Annotated[JWTService, Depends()],
+        credentials: Annotated[HTTPAuthorizationCredentials, Depends(bearer_scheme)],
 ) -> TokenPayload:
     """Extract and verify token payload from Authorization header.
 
@@ -75,7 +38,7 @@ async def _get_token_payload(
 
 
 async def get_current_user(
-    payload: Annotated[TokenPayload, Depends(_get_token_payload)],
+        payload: Annotated[TokenPayload, Depends(_get_token_payload)],
 ) -> UUID:
     """Get current user ID from Authorization header.
 
@@ -89,7 +52,7 @@ async def get_current_user(
 
 
 async def get_staff_user(
-    payload: Annotated[TokenPayload, Depends(_get_token_payload)],
+        payload: Annotated[TokenPayload, Depends(_get_token_payload)],
 ) -> UUID:
     """Get current user ID, verifying the user is a staff member.
 

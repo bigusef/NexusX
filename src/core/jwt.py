@@ -6,16 +6,19 @@ revocation support for both single-device and all-device logout.
 
 from datetime import UTC
 from datetime import datetime
+from typing import Annotated
 from uuid import UUID
 from uuid import uuid4
 
 import redis.asyncio as aioredis
+from fastapi import Depends
 from jose import JWTError
 from jose import jwt
 from pydantic import BaseModel
 from pydantic import Field
 
 from src.core import settings
+from src.core.redis import get_redis
 from src.exceptions import ExpiredTokenException
 from src.exceptions import InvalidTokenException
 from src.exceptions import RevokedTokenException
@@ -53,27 +56,36 @@ class JWTService:
     - Separate access/refresh token types to prevent misuse
     - Short-lived access tokens, long-lived refresh tokens
 
-    Usage:
+    Usage with FastAPI (automatic dependency injection):
         ```python
-        jwt_service = JWTService(redis)
+        from typing import Annotated
+        from fastapi import Depends
 
-        # Create tokens (login)
-        tokens = await jwt_service.create_token_pair(
-            user_id=user.pk,
-            email=user.email,
-            is_staff=user.is_staff,
-        )
+        @app.post("/login")
+        async def login(
+            jwt_service: Annotated[JWTService, Depends()],
+        ):
+            tokens = await jwt_service.create_token_pair(
+                user_id=user.pk,
+                email=user.email,
+                is_staff=user.is_staff,
+            )
+            return tokens
+        ```
 
+    Usage with ARQ workers (manual instantiation):
+        ```python
+        async def process_token_task(ctx: dict, user_id: UUID):
+            async with get_redis_context() as redis:
+                jwt_service = JWTService(redis)
+                await jwt_service.revoke_all_user_tokens(user_id)
+        ```
+
+    Token operations:
+        ```python
         # Verify tokens
         payload = await jwt_service.verify_access_token(tokens.access)
         payload = await jwt_service.verify_refresh_token(tokens.refresh)
-
-        # Refresh tokens (after validating user in auth service)
-        new_tokens = await jwt_service.refresh_token_pair(
-            refresh_token=tokens.refresh,
-            email=user.email,
-            is_staff=user.is_staff,
-        )
 
         # Revoke tokens
         await jwt_service.revoke_refresh_token(jti)  # Single device
@@ -85,7 +97,7 @@ class JWTService:
     _TOKEN_VERSION_PREFIX = "jwt:version:"
     _REFRESH_TOKEN_PREFIX = "jwt:refresh:"
 
-    def __init__(self, redis: aioredis.Redis) -> None:
+    def __init__(self, redis: Annotated[aioredis.Redis, Depends(get_redis)]) -> None:
         """Initialize JWT service with Redis client.
 
         Args:

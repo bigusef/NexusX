@@ -1,13 +1,14 @@
 """Authentication domain services."""
-
+from typing import Annotated
 from uuid import UUID
+
+from fastapi import Depends
 
 from src.core.jwt import JWTService
 from src.core.jwt import TokenPair
 from src.exceptions import AuthenticationException
 from src.exceptions import NotFoundException
 
-from .entities import User
 from .repositories import UserRepository
 
 
@@ -18,20 +19,35 @@ class AuthService:
     - Token refresh with user validation
     - Logout operations (single device / all devices)
 
-    Usage:
+    Usage with FastAPI (automatic dependency injection):
         ```python
-        auth_service = AuthService(user_repo, jwt_service)
+        from typing import Annotated
+        from fastapi import Depends
 
-        # Refresh tokens
-        new_tokens = await auth_service.refresh_tokens(refresh_token)
+        @app.post("/auth/refresh")
+        async def refresh(
+            auth_service: Annotated[AuthService, Depends()],
+        ):
+            return await auth_service.refresh_tokens(refresh_token)
+        ```
 
-        # Logout
-        await auth_service.logout(refresh_token)
-        await auth_service.logout_all_devices(user_id)
+    Usage with ARQ workers (manual instantiation):
+        ```python
+        async def process_logout_task(ctx: dict, user_id: UUID):
+            async with get_session_context() as session:
+                async with get_redis_context() as redis:
+                    user_repo = UserRepository(session)
+                    jwt_service = JWTService(redis)
+                    auth_service = AuthService(user_repo, jwt_service)
+                    await auth_service.logout_all_devices(user_id)
         ```
     """
 
-    def __init__(self, user_repo: UserRepository, jwt_service: JWTService) -> None:
+    def __init__(
+        self,
+        user_repo: Annotated[UserRepository, Depends()],
+        jwt_service: Annotated[JWTService, Depends()],
+    ) -> None:
         """Initialize auth service with dependencies.
 
         Args:
