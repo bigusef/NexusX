@@ -63,7 +63,7 @@ class RequestHeadersMiddleware(BaseHTTPMiddleware):
 
         # Validate platform value
         source_lower = source_header.lower()
-        if source_lower not in Platform.values:
+        if source_lower not in Platform.values():
             return JSONResponse(
                 status_code=403,
                 content={"detail": "Forbidden Request"},

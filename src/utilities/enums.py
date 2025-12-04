@@ -108,7 +108,6 @@ class Language(StrEnum):
         return cls.EN
 
     @classmethod
-    @property
     def values(cls) -> list[str]:
         """Get list of all supported language codes.
 
@@ -116,7 +115,7 @@ class Language(StrEnum):
             List of ISO 639-1 codes.
 
         Example:
-            Language.values  # ["ar", "de", "en", "es", "fr", "ru", "it"]
+            Language.values()  # ["ar", "de", "en", "es", "fr", "ru", "it"]
         """
         return [lang.value for lang in cls]
 
@@ -154,7 +153,6 @@ class Platform(StrEnum):
     CUSTOMER = "customer"
 
     @classmethod
-    @property
     def values(cls) -> list[str]:
         """Get list of all platform values.
 
@@ -162,6 +160,6 @@ class Platform(StrEnum):
             List of platform string values.
 
         Example:
-            Platform.values  # ["admin", "customer"]
+            Platform.values()  # ["admin", "customer"]
         """
         return [p.value for p in cls]
