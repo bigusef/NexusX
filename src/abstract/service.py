@@ -1,35 +1,31 @@
-"""Base service class with DI support.
+"""Base service class for domain services.
 
-Provides a base class for domain services with auto-generated `.DI`
-type alias for FastAPI dependency injection.
+Provides a base class that domain services should inherit from.
 """
-
-from typing import Annotated
-from typing import Any
-
-from fastapi import Depends
 
 
 class Service:
-    """Base service with auto-generated .DI for FastAPI dependency injection.
+    """Base service for domain business logic.
 
-    This class provides:
-    - Auto-generated `.DI` type alias for clean FastAPI endpoint signatures
-    - Support for both FastAPI DI and manual instantiation (ARQ workers, CLI)
+    This class serves as a marker base class for all domain services,
+    enabling consistent patterns across the codebase.
 
     Usage with FastAPI (automatic dependency injection):
         ```python
+        from typing import Annotated
+        from fastapi import Depends
+
         class AuthService(Service):
             def __init__(
                 self,
-                user_repo: UserRepository.DI,
-                jwt_service: JWTService.DI,
+                user_repo: Annotated[UserRepository, Depends()],
+                jwt_service: Annotated[JWTService, Depends()],
             ) -> None:
                 self._user_repo = user_repo
                 self._jwt_service = jwt_service
 
         @app.post("/auth/refresh")
-        async def refresh(auth_service: AuthService.DI):
+        async def refresh(auth_service: Annotated[AuthService, Depends()]):
             return await auth_service.refresh_tokens(token)
         ```
 
@@ -43,12 +39,6 @@ class Service:
                     auth_service = AuthService(user_repo, jwt_service)
                     await auth_service.logout_all_devices(user_id)
         ```
-
-    Attributes:
-        DI: Auto-generated type alias for FastAPI dependency injection.
     """
 
-    def __init_subclass__(cls, **kwargs: Any) -> None:
-        """Generate DI type alias when subclass is defined."""
-        super().__init_subclass__(**kwargs)
-        cls.DI = Annotated[cls, Depends()]
+    pass

@@ -1,6 +1,9 @@
 """Authentication domain services."""
 
+from typing import Annotated
 from uuid import UUID
+
+from fastapi import Depends
 
 from src.abstract import Service
 from src.exceptions import AuthenticationException
@@ -17,12 +20,14 @@ class AuthService(Service):
     This service orchestrates authentication operations:
     - Token refresh with user validation
     - Logout operations (single device / all devices)
-    - Auto-generated `.DI` type alias for FastAPI dependency injection
 
     Usage with FastAPI (automatic dependency injection):
         ```python
+        from typing import Annotated
+        from fastapi import Depends
+
         @app.post("/auth/refresh")
-        async def refresh(auth_service: AuthService.DI):
+        async def refresh(auth_service: Annotated[AuthService, Depends()]):
             return await auth_service.refresh_tokens(refresh_token)
         ```
 
@@ -40,8 +45,8 @@ class AuthService(Service):
 
     def __init__(
         self,
-        user_repo: UserRepository.DI,
-        jwt_service: JWTService.DI,
+        user_repo: Annotated[UserRepository, Depends()],
+        jwt_service: Annotated[JWTService, Depends()],
     ) -> None:
         """Initialize auth service with dependencies.
 

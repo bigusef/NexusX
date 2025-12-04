@@ -56,14 +56,15 @@ class JWTService(Service):
     - Individual refresh token revocation via Redis
     - Separate access/refresh token types to prevent misuse
     - Short-lived access tokens, long-lived refresh tokens
-    - Auto-generated `.DI` type alias for FastAPI dependency injection
 
     Usage with FastAPI (automatic dependency injection):
         ```python
+        from typing import Annotated
+        from fastapi import Depends
         from src.security import JWTService
 
         @app.post("/login")
-        async def login(jwt_service: JWTService.DI):
+        async def login(jwt_service: Annotated[JWTService, Depends()]):
             tokens = await jwt_service.create_token_pair(
                 user_id=user.pk,
                 email=user.email,

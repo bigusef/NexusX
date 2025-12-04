@@ -38,15 +38,20 @@ class Repository[EntityT: Entity]:
     - Pagination support
     - Count and existence checks
     - Transaction support for cross-repository operations
-    - Auto-generated `.DI` type alias for FastAPI dependency injection
 
     Usage with FastAPI (automatic dependency injection):
         ```python
+        from typing import Annotated
+        from fastapi import Depends
+
         class UserRepository(Repository[User]):
             pass  # Entity type auto-detected from generic parameter
 
         @app.get("/users/{user_id}")
-        async def get_user(user_id: UUID, user_repo: UserRepository.DI):
+        async def get_user(
+            user_id: UUID,
+            user_repo: Annotated[UserRepository, Depends()],
+        ):
             return await user_repo.get_one(User.pk == user_id)
         ```
 
@@ -72,7 +77,6 @@ class Repository[EntityT: Entity]:
         ```
 
     Attributes:
-        DI: Auto-generated type alias for FastAPI dependency injection.
         _entity: The SQLAlchemy entity class (auto-detected from type parameter).
         _session: The async database session.
     """
@@ -81,10 +85,9 @@ class Repository[EntityT: Entity]:
     __orig_bases__: tuple[type, ...]
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
-        """Extract entity type and generate DI alias when a subclass is defined."""
+        """Extract entity type when a subclass is defined."""
         super().__init_subclass__(**kwargs)
         cls._entity = cls.__orig_bases__[0].__args__[0]
-        cls.DI = Annotated[cls, Depends()]
 
     def __init__(
         self,
