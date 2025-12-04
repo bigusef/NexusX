@@ -17,7 +17,6 @@ from jose import jwt
 from pydantic import BaseModel
 from pydantic import Field
 
-from src.abstract import Service
 from src.core import settings
 from src.core.redis import get_redis
 from src.exceptions import ExpiredTokenException
@@ -45,7 +44,7 @@ class TokenPair(BaseModel):
     refresh: str = Field(description="JWT refresh token")
 
 
-class JWTService(Service):
+class JWTService:
     """JWT token generation and verification service.
 
     Handles creation and verification of access and refresh tokens.

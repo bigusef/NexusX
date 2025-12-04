@@ -11,12 +11,12 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.sql import func
 
-from src.abstract.entity import Entity
-from src.abstract.entity import StatusMixin
+from src.abstract import Entity
+from src.abstract import StatusMixin
 from src.utilities.enums import Language
 
 
-class User(Entity, StatusMixin):
+class User(StatusMixin, Entity):
     """User entity for authentication.
 
     Attributes:

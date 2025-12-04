@@ -5,7 +5,6 @@ from uuid import UUID
 
 from fastapi import Depends
 
-from src.abstract import Service
 from src.exceptions import AuthenticationException
 from src.exceptions import NotFoundException
 from src.security import JWTService
@@ -14,7 +13,7 @@ from src.security import TokenPair
 from .repositories import UserRepository
 
 
-class AuthService(Service):
+class AuthService:
     """Authentication service handling user authentication and token management.
 
     This service orchestrates authentication operations:

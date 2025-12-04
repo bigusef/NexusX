@@ -18,7 +18,7 @@ from sqlalchemy import select
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.abstract.entity import Entity
+from .entity import Entity
 from src.core.database import get_session
 from src.exceptions import NotFoundException
 

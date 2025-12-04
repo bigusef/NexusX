@@ -76,7 +76,7 @@ All database models inherit from `Entity`, which provides:
 - Consistent naming convention for constraints
 
 ```python
-from src.abstract.entity import Entity, TimeStampMixin, StatusMixin
+from src.abstract import Entity, TimeStampMixin, StatusMixin
 
 class User(Entity, TimeStampMixin, StatusMixin):
     # pk is auto-provided (BigInteger with Identity)

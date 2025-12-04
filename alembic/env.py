@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 # Import Entity and all entities for auto-discovery
-from src.abstract.entity import Entity
+from src.abstract import Entity
 from src.core import settings
 
 
