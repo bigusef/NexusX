@@ -1,10 +1,10 @@
 # Shared configuration for backend services
-x-nexus-cortex: &nexus-cortex
+x-nexus-cor: &nexus-cor
   build:
     context: .
     dockerfile: Dockerfile
     target: development
-  image: nexus-cortex:dev
+  image: nexus-cor:dev
   env_file: .env.example
   volumes:
     - .:/app
@@ -46,14 +46,14 @@ services:
       retries: 5
 
   api:
-    <<: *nexus-cortex
+    <<: *nexus-cor
     container_name: nexus-api
     ports:
       - "8000:8000"
     command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 
   worker:
-    <<: *nexus-cortex
+    <<: *nexus-cor
     container_name: nexus-worker
     command: arq workers.main.WorkerSettings
 

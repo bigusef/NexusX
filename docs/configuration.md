@@ -1,6 +1,6 @@
 # Configuration
 
-This document describes all configuration options available in Nexus Cortex.
+This document describes all configuration options available in Nexus.
 
 ## Environment Variables
 

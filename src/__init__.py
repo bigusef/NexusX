@@ -1,1 +1,1 @@
-"""Nexus Cortex - Clean Architecture with FastAPI"""
+"""Nexus - Clean Architecture with FastAPI"""

@@ -1,10 +1,10 @@
 # Architecture
 
-This document explains the architectural patterns and design decisions in Nexus Cortex.
+This document explains the architectural patterns and design decisions in Nexus.
 
 ## Overview
 
-Nexus Cortex follows **Clean Architecture** principles with **Domain-Driven Design (DDD)** patterns. The codebase is organized into layers with clear separation of concerns.
+Nexus follows **Clean Architecture** principles with **Domain-Driven Design (DDD)** patterns. The codebase is organized into layers with clear separation of concerns.
 
 ## Project Structure
 

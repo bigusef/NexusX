@@ -1,11 +1,11 @@
-# German translations for Nexus Cortex.
+# German translations for Nexus.
 # Copyright (C) 2024
-# This file is distributed under the same license as the Nexus Cortex
+# This file is distributed under the same license as the Nexus
 # project.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Nexus Cortex 0.1.0\n"
+"Project-Id-Version: Nexus 0.1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-11-29 05:51+0200\n"
 "PO-Revision-Date: 2024-01-01 00:00+0000\n"

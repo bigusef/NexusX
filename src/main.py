@@ -19,8 +19,8 @@ settings = get_settings()
 
 # Create main FastAPI application with lifespan
 app = FastAPI(
-    title="Nexus Cortex",
-    description="Nexus Cortex API's - Clean Architecture with FastAPI",
+    title="Nexus",
+    description="Nexus API's - Clean Architecture with FastAPI",
     version="0.1.0",
     lifespan=lifespan,
     debug=settings.debug,

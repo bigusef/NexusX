@@ -1,4 +1,4 @@
-"""Global test fixtures for Nexus Cortex."""
+"""Global test fixtures for Nexus."""
 
 # ruff: noqa: E402
 # Set test environment BEFORE importing application modules

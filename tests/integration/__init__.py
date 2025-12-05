@@ -1,1 +1,1 @@
-"""Integration tests for Nexus Cortex."""
+"""Integration tests for Nexus."""

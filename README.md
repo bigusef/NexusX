@@ -1,4 +1,4 @@
-# Nexus Cortex
+# Nexus
 
 A modern, production-ready FastAPI backend platform built with Clean Architecture principles and async-first design.
 
@@ -39,8 +39,8 @@ A modern, production-ready FastAPI backend platform built with Clean Architectur
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/nexus-cortex.git
-cd nexus-cortex
+git clone https://github.com/your-username/nexus.git
+cd nexus
 
 # Copy environment file
 cp .env.example .env
@@ -69,7 +69,7 @@ The API will be available at `http://localhost:8000`.
 ## Project Structure
 
 ```
-nexus-cortex/
+nexus/
 ├── src/                    # Application source code
 │   ├── main.py            # FastAPI entry point
 │   ├── core/              # Infrastructure (config, db, redis, jwt, i18n)

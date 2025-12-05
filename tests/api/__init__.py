@@ -1,1 +1,1 @@
-"""API tests for Nexus Cortex."""
+"""API tests for Nexus."""

@@ -1,4 +1,4 @@
-"""Nexus Cortex CLI."""
+"""Nexus CLI."""
 
 from .main import app
 

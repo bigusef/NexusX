@@ -1,1 +1,1 @@
-"""Nexus Cortex test suite."""
+"""Nexus test suite."""

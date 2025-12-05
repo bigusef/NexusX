@@ -1,6 +1,6 @@
 # Getting Started
 
-This guide walks you through setting up Nexus Cortex for local development.
+This guide walks you through setting up Nexus for local development.
 
 ## Prerequisites
 
@@ -14,8 +14,8 @@ This guide walks you through setting up Nexus Cortex for local development.
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/nexus-cortex.git
-cd nexus-cortex
+git clone https://github.com/your-username/nexus.git
+cd nexus
 ```
 
 ### Environment Configuration
@@ -30,7 +30,7 @@ cp .env.example .env
 
 ## Running with Docker (Recommended)
 
-The easiest way to run Nexus Cortex is with Docker Compose:
+The easiest way to run Nexus is with Docker Compose:
 
 ```bash
 # Start all services (API, worker, PostgreSQL, Redis)
@@ -72,7 +72,7 @@ uv run uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 
 ## Database Migrations
 
-Nexus Cortex uses Alembic for database migrations.
+Nexus uses Alembic for database migrations.
 
 ### Running Migrations
 
@@ -127,7 +127,7 @@ docker compose exec api uv run pytest --cov=src --cov-report=html
 
 ## CLI Commands
 
-Nexus Cortex includes a CLI for common tasks. The CLI is available as `nexus` when installed.
+Nexus includes a CLI for common tasks. The CLI is available as `nexus` when installed.
 
 ### Translation Management (i18n)
 

@@ -1,1 +1,1 @@
-"""Unit tests for Nexus Cortex."""
+"""Unit tests for Nexus."""
